@@ -33,6 +33,27 @@ jobs:
           python -m coverage run -m pytest
           python -m coverage report
           
+  build_and_pub:
+    # Если тесты были пройдены успешно
+    needs: Tests
+    runs-on: ubuntu-latest
+    env:
+      LOGIN: ${{ secrets.DOCKER_LOGIN }}
+      NAME: ${{ secrets.DOCKER_NAME }}
+    steps:
+      - name: Login to docker.io
+        # Сначала мы логинимся в docker.io
+        run:  echo ${{ secrets.DOCKER_PWD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+        # Чекаутим код
+      - uses: actions/checkout@master
+      - name: Build image
+        # Собираем image и называем его так как указано в hub.docker т.е. login/repository:version
+        run: docker build -t $LOGIN/$NAME:${GITHUB_REF:11} -f Dockerfile .
+      - name: Push image to docker.io
+        # Пушим образ в registry
+        run: docker push $LOGIN/$NAME:${GITHUB_REF:11}
+
+          
   Deploy:
     runs-on: ubuntu-latest
     needs: Tests
@@ -44,14 +65,3 @@ jobs:
           heroku_app_name: "web-terminator-calculator" #Must be unique in Heroku
           heroku_email: ${{secrets.HEROKU_EMAIL}}
       
-  TelegramNotifications:
-    runs-on: ubuntu-latest
-    needs: Deploy
-    if: failure()
-    steps:
-    - name: Notification
-      uses: appleboy/telegram-action@master
-      with:
-       to: ${{ secrets.TELEGRAM_TO }}
-       token: ${{ secrets.TELEGRAM_TOKEN }}
-       message: 🤬ERROR
