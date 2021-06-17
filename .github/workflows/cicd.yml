@@ -15,7 +15,7 @@ on:
 
 jobs:
   CodeStyle:
-    runs-on: ubuntu-latest
+    runs-on: self_hosted
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
@@ -23,7 +23,7 @@ jobs:
       - name: CodeStyle
         run: python -m flake8 ./ --ignore=F401,E402
   Tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: CodeStyle
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
   build_and_pub:
     # Если тесты были пройдены успешно
     needs: Tests
-    runs-on: [ubuntu-latest]
+    runs-on: self-hosted
     env:
       LOGIN: ${{ secrets.DOCKER_LOGIN }}
       NAME: ${{ secrets.DOCKER_NAME }}
