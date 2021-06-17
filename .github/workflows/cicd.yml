@@ -1,0 +1,53 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI/CD
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+  workflow_dispatch:
+
+
+jobs:
+  CodeStyle:
+    runs-on: azure
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install flake8
+      - name: CodeStyle
+        run: python3 -m flake8 ./ --ignore=F401,E402
+  Tests:
+    runs-on: azure
+    needs: CodeStyle
+    steps:
+      - uses: actions/checkout@v2
+      - name: Tests
+        run: |
+          pip install -e '.[test]'
+          python3 -m coverage run -m pytest
+          python3 -m coverage report
+          
+          
+  build_and_run:
+    needs: Tests
+    runs-on: azure
+    env:
+      LOGIN: ${{ secrets.DOCKER_LOGIN }}
+      NAME: ${{ secrets.DOCKER_NAME }}
+    steps:
+      - name: Login to docker.io
+        run:  echo ${{ secrets.DOCKER_PWD }} | sudo docker login -u $LOGIN --password-stdin
+      - uses: actions/checkout@master
+      - name: Build image
+        run: sudo docker build -t $LOGIN/$NAME:$GITHUB_RUN_ID -f Dockerfile .
+      - name: Push image to docker.io
+        run: sudo docker push $LOGIN/$NAME:$GITHUB_RUN_ID
+      - name: Run on azure
+        run: sudo docker run -d -p 80:5000 --restart always $LOGIN/$NAME:$GITHUB_RUN_ID
