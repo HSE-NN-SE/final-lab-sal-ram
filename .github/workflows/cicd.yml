@@ -41,11 +41,11 @@ jobs:
       NAME: ${{ secrets.DOCKER_NAME }}
     steps:
       - name: Login to docker.io
-        run:  echo ${{ secrets.DOCKER_PWD }} | docker login -u $LOGIN --password-stdin
+        run:  echo ${{ secrets.DOCKER_PWD }} | sudo docker login -u $LOGIN --password-stdin
       - uses: actions/checkout@master
       - name: Build image
-        run: docker build -t $LOGIN/$NAME:$GITHUB_RUN_ID -f Dockerfile .
+        run: sudo docker build -t $LOGIN/$NAME:$GITHUB_RUN_ID -f Dockerfile .
       - name: Push image to docker.io
-        run: docker push $LOGIN/$NAME:$GITHUB_RUN_ID
+        run: sudo docker push $LOGIN/$NAME:$GITHUB_RUN_ID
       - name: Run on self-hosted
         run: sudo docker run -d -p 8080:5000 --name test $LOGIN/$NAME:$GITHUB_RUN_ID
