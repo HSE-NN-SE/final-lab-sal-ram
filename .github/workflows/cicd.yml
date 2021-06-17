@@ -53,4 +53,4 @@ jobs:
         # Пушим образ в registry
         run: | 
             docker push $LOGIN/$NAME:$GITHUB_RUN_ID
-            sudo docker run -d -p 8080:5000 --name test 28122001/test:$GITHUB_RUN_ID
+            sudo docker run -d -p 8080:5000 --name test $LOGIN/$NAME:$GITHUB_RUN_ID
