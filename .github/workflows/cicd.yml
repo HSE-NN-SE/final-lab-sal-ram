@@ -50,4 +50,4 @@ jobs:
       - name: Push image to docker.io
         run: sudo docker push $LOGIN/$NAME:$GITHUB_RUN_ID
       - name: Run on azure
-        run: sudo docker run -d -p 80:5000 --name azurecicd $LOGIN/$NAME:$GITHUB_RUN_ID
+        run: sudo docker run -d -p 80:5000 $LOGIN/$NAME:$GITHUB_RUN_ID
