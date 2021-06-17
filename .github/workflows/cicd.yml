@@ -34,7 +34,6 @@ jobs:
           python3 -m coverage run -m pytest
           python3 -m coverage report
           
-          
   build_and_run:
     needs: Tests
     runs-on: azure
@@ -50,4 +49,4 @@ jobs:
       - name: Push image to docker.io
         run: sudo docker push $LOGIN/$NAME:$GITHUB_RUN_ID
       - name: Run on azure
-        run: sudo docker run -d -p 80:5000 $LOGIN/$NAME:$GITHUB_RUN_ID
+        run: sudo docker run --rm -p 80:5000 $LOGIN/$NAME:$GITHUB_RUN_ID
